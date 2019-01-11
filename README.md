@@ -7,4 +7,5 @@
 - 현재 로직/파일 분산 및 최적화 시도중
 - 텍스처 아틀라스로 재구성 필요
 
-튜토리얼 펼친 날: 2018.12.27
+* Resources/Sound 내의 wav 파일 출처: Gamemaster Audio - Pro Sound Collection Pack 
+https://www.gamemasteraudio.com/
