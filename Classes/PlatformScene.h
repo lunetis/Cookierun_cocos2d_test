@@ -86,26 +86,29 @@ public:
 	
 
 private:
-	// Map Data
-	int tileSize;
-
-
-
 	// Functions
 	int getHeight(const Vec2 &position);
 	void setCoins(TMXObjectGroup* coins);
 	void setCoin(float x, float y, float size, int tag);
 
 	void setTraps(TMXObjectGroup* traps);
-
 	void setItems(TMXObjectGroup* items);
 	void setItem(float x, float y, int tag);
+
+	// Status function
 	void resetInvincible(float dt);
 	void resetEnhanced(float dt);
 	void resetBoost(float dt);
+
+	// UI
 	void setHealthBar(float dt);
 	void setHealthBarImmediate(float health);
 
+	void initMap();
+	void initUI();
+	void initCharacter();
+
+	// Game function
 	void finish();
 	void flagAnimate();
 	void gameOver();
@@ -115,8 +118,14 @@ private:
 	void replay(Ref* pSender);
 	void exit(Ref* pSender);
 
+	// Other stuffs
 	void shakeScreen();
 	void showBoostEffect();
+
+
+	// Map Data
+	int tileSize;
+
 
 	// Character Component
 	Sprite* character;
@@ -167,6 +176,7 @@ private:
 
 
 	// UI
+	
 	Camera* cam;
 	Camera* uiCam;
 	Sprite* bgFront, *bgRear;
@@ -182,7 +192,7 @@ private:
 	ui::LoadingBar* healthBar;
 
 	// Use for Progress
-	int startX, endX;
+	int startX, endX, startY, endY;
 	float barWidth;
 	Vec2 progressOrigin;
 

@@ -41,9 +41,8 @@ Scene* Platformer::createScene()
 	Scene* scene = Platformer::createWithPhysics();
 	auto layer = Platformer::create();
 	scene->addChild(layer);
-	scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+	// scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
 	return scene;
-
 }
 
 // Print useful error message instead of segfaulting when files are not there.
@@ -53,6 +52,9 @@ static void problemLoading(const char* filename)
     printf("Depending on how you compiled you might have to add 'Resources/' in front of filenames in PlatformerScene.cpp\n");
 }
 
+
+
+// Set Single Coin at x, y
 void Platformer::setCoin(float x, float y, float size, int tag)
 {
 	Sprite* coin;
@@ -76,16 +78,17 @@ void Platformer::setCoin(float x, float y, float size, int tag)
 }
 
 
+// Set coins with Object group
 void Platformer::setCoins(TMXObjectGroup* coins)
 {
-	auto& objects = coins->getObjects();
+	auto &objects = coins->getObjects();
 	float x, y, offset;
 	int coinHeight, coinWidth;
 	int tag;
 
-	for (auto& obj : objects)
+	for (auto &obj : objects)
 	{
-		ValueMap& dict = obj.asValueMap();
+		ValueMap &dict = obj.asValueMap();
 		x = dict["x"].asFloat();
 		y = dict["y"].asFloat();
 		offset = dict["Offset"].asFloat();
@@ -134,16 +137,18 @@ void Platformer::setCoins(TMXObjectGroup* coins)
 }
 
 
+
+// Set traps with Object group
 void Platformer::setTraps(TMXObjectGroup* traps)
 {
-	auto& objects = traps->getObjects();
+	auto &objects = traps->getObjects();
 	float x, y;
 	Sprite* trap;
 	PhysicsBody* body;
 
-	for (auto& obj : objects)
+	for (auto &obj : objects)
 	{
-		ValueMap& dict = obj.asValueMap();
+		ValueMap &dict = obj.asValueMap();
 		x = dict["x"].asFloat();
 		y = dict["y"].asFloat();
 
@@ -195,14 +200,16 @@ void Platformer::setTraps(TMXObjectGroup* traps)
 }
 
 
+
+// Set Items with Object group
 void Platformer::setItems(TMXObjectGroup* items)
 {
-	auto& objects = items->getObjects();
+	auto &objects = items->getObjects();
 	float x, y;
 
-	for (auto& obj : objects)
+	for (auto &obj : objects)
 	{
-		ValueMap& dict = obj.asValueMap();
+		ValueMap &dict = obj.asValueMap();
 		x = dict["x"].asFloat();
 		y = dict["y"].asFloat();
 
@@ -225,6 +232,8 @@ void Platformer::setItems(TMXObjectGroup* items)
 }
 
 
+
+// Set single item
 void Platformer::setItem(float x, float y, int tag)
 {
 	Sprite* item;
@@ -250,7 +259,7 @@ void Platformer::setItem(float x, float y, int tag)
 
 
 
-// getHeight: Return groundHeight of the character's current position X
+// getHeight: Return groundHeight of the character's corresponding ground position X
 int Platformer::getHeight(const Vec2 &position)
 {
 	int height = -200;
@@ -268,8 +277,11 @@ int Platformer::getHeight(const Vec2 &position)
 	{
 		// Left corner
 		groundTile1 = groundLayer->getTileAt(Vec2(tileXleft, i));
+
+		// Right corner
 		groundTile2 = groundLayer->getTileAt(Vec2(tileXright, i));
 		
+		// Search Meta layer
 		if (groundTile1 || groundTile2)
 		{
 			groundTile1 = metaLayer->getTileAt(Vec2(tileXleft, i));
@@ -287,34 +299,13 @@ int Platformer::getHeight(const Vec2 &position)
 }
 
 
-
-
-
-
-// on "init" you need to initialize your instance
-bool Platformer::init()
+void Platformer::initMap()
 {
-    if ( !Scene::init() )
-    {
-        return false;
-    }
-
-	isFinished = false;
-	isGameOver = false;
-	isPaused = false;
-	// Audio Settings
-	// �� �̷��� ���� ���� �ɷ�
-	/*
-	audio = SimpleAudioEngine::getInstance();
-	audio->preloadEffect("Sound/coin2.wav");
-	audio->preloadEffect("Sound/jelly.wav");
-	*/
-
 	// Background
 	bgFront = Sprite::create("background.png");
 	bgRear = Sprite::create("background.png");
 	bgSize = bgFront->getContentSize();
-	
+
 
 	bgRear->setPosition(bgFront->getPosition() + Vec2(bgSize.width, 0));
 	bgOffset = Vec2::ZERO;
@@ -323,7 +314,7 @@ bool Platformer::init()
 	addChild(bgRear, -1);
 
 
-	
+
 	// Tilemap
 	auto tileMap = TMXTiledMap::create("tilemap/Grassmap.tmx");
 	tileMap->setAnchorPoint(Vec2(0, 0));
@@ -331,7 +322,7 @@ bool Platformer::init()
 	groundLayer = tileMap->getLayer("Ground Layer");
 	metaLayer = tileMap->getLayer("Meta Layer");
 	addChild(tileMap, 1);
-	
+
 	// Get Size
 	tileSize = (int)(tileMap->getTileSize().width * 1.25);
 	mapSize = tileMap->getMapSize();
@@ -342,13 +333,15 @@ bool Platformer::init()
 	ValueMap startPoint = points->getObject("Start");
 
 	startX = startPoint["x"].asInt();
-	int startY = startPoint["y"].asInt();
+	startY = startPoint["y"].asInt();
 
-	// End Point
+
+
+	// End Point (Flag)
 	ValueMap endPoint = points->getObject("End");
 
 	endX = endPoint["x"].asInt();
-	int endY = endPoint["y"].asInt();
+	endY = endPoint["y"].asInt();
 
 	checkpoint = Sprite::create("Checkpoint/FlagHide1.png");
 
@@ -372,80 +365,25 @@ bool Platformer::init()
 
 	checkpoint->setTag(ITEM_TAG::FINISH);
 	addChild(checkpoint);
-	
-	
+
+
 
 	// Coin Setting
 
 	TMXObjectGroup* coins = tileMap->getObjectGroup("Coins");
-	if(coins) setCoins(coins);
-	
+	if (coins) setCoins(coins);
+
 	// Trap Setting
 
 	TMXObjectGroup* traps = tileMap->getObjectGroup("Traps");
-	if(traps) setTraps(traps);
+	if (traps) setTraps(traps);
 
 	// Item Setting
 
 	TMXObjectGroup* items = tileMap->getObjectGroup("Items");
 	if (items) setItems(items);
 
-
-
-	// Character
-	character = Sprite::create("Cookies/Run_0001.png");
-
-
-	// Animations
-	auto runAnim = Animation::create();
-	runAnim->setDelayPerUnit(0.05f);
-	runAnim->addSpriteFrameWithFile("Cookies/Run_0001.png");
-	runAnim->addSpriteFrameWithFile("Cookies/Run_0002.png");
-	runAnim->addSpriteFrameWithFile("Cookies/Run_0003.png");
-	runAnim->addSpriteFrameWithFile("Cookies/Run_0004.png");
-	runAnimation = Animate::create(runAnim);
-	runAnimation->retain();
-	
-
-	auto jump1Anim = Animation::create();
-	jump1Anim->setDelayPerUnit(1);
-	jump1Anim->addSpriteFrameWithFile("Cookies/Jump1.png");
-	jump1Animation = Animate::create(jump1Anim);
-	jump1Animation->retain();
-
-
-	auto jump2Anim = Animation::create();
-	jump2Anim->setDelayPerUnit(0.07f);
-	jump2Anim->addSpriteFrameWithFile("Cookies/Jump2_0001.png");
-	jump2Anim->addSpriteFrameWithFile("Cookies/Jump2_0002.png");
-	jump2Anim->addSpriteFrameWithFile("Cookies/Jump2_0003.png");
-	jump2Anim->addSpriteFrameWithFile("Cookies/Jump2_0004.png");
-	jump2Animation = Animate::create(jump2Anim);
-	jump2Animation->retain();
-
-
-	auto slideAnim = Animation::create();
-	slideAnim->setDelayPerUnit(1);
-	slideAnim->addSpriteFrameWithFile("Cookies/Slide.png");
-	slideAnimation = Animate::create(slideAnim);
-	slideAnimation->retain();
-
-
-	character->runAction(RepeatForever::create(runAnimation));
-	character->setAnchorPoint(Vec2(0.5, 0));
-	character->setPosition(Vec2(startX, startY));
-	
-
-	// Set Velocity and Physics
-	velocity = Vec2(VELOCITY, 0);
-	character->setTag(CHARACTER_TAG);
-
-	
-	normalBody = PhysicsBody::createBox(Size(characterWidth, characterHeight), PHYSICSBODY_MATERIAL_DEFAULT, Vec2(0, -5));
-	normalBody->setGravityEnable(false);
-	normalBody->setContactTestBitmask(0xFFFFFFFF);
-	
-
+	// Snake Animation
 	auto snakeAnim = Animation::create();
 	snakeAnim->setDelayPerUnit(0.08f);
 	snakeAnim->addSpriteFrameWithFile("Traps/Snake_0001.png");
@@ -456,42 +394,11 @@ bool Platformer::init()
 	snakeAnimation = Animate::create(snakeAnim);
 	snakeAnimation->retain();
 
-	character->setPhysicsBody(normalBody);
-	addChild(character, 2);
+}
 
 
-	// Set Character Components
-	score = 0;
-	coin = 0;
-	health = STARTHEALTH;
-	
-	// Effect
-	blink = 0;
-	boost = 0;
-
-	// Move Components
-	isGround = false;
-	isMovingLeft = false;
-	isMovingRight = false;
-	canJump1 = false;
-	canJump2 = false;
-	isSliding = false;
-
-
-	// Keyboard Listener
-	auto keyListener = EventListenerKeyboard::create();
-	keyListener->onKeyPressed = CC_CALLBACK_2(Platformer::onKeyPressed, this);
-	keyListener->onKeyReleased = CC_CALLBACK_2(Platformer::onKeyReleased, this);
-
-	_eventDispatcher->addEventListenerWithSceneGraphPriority(keyListener, this);
-
-	
-	// Contact (Physics) Listener
-	auto contactListener = EventListenerPhysicsContact::create();
-	contactListener->onContactBegin = CC_CALLBACK_1(Platformer::onContactBegin, this);
-	
-	_eventDispatcher->addEventListenerWithSceneGraphPriority(contactListener, this);
-
+void Platformer::initUI()
+{
 
 	// User Camera
 	cam = this->getDefaultCamera();
@@ -524,17 +431,17 @@ bool Platformer::init()
 	coinLabel->setTextColor(Color4B::WHITE);
 	coinLabel->enableOutline(Color4B::BLACK, 5);
 	coinLabel->setAnchorPoint(Vec2(0, 0.5f));
-	
+
 	coinLabel->setPosition(Vec2(85, _director->getWinSize().height - 150));
 	coinLabel->setCameraMask((unsigned short)CameraFlag::USER1);
 	addChild(coinLabel);
-	
+
 
 	//Healthbar
 	healthBar = ui::LoadingBar::create("UI/healthBar.png");
 	healthBar->setDirection(ui::LoadingBar::Direction::LEFT);
 	healthBar->setPercent(100);
-	
+
 	healthBar->setPosition(Vec2(_director->getWinSize().width / 2, _director->getWinSize().height - 50));
 	healthBar->setCameraMask((unsigned short)CameraFlag::USER1);
 	healthBar->setPercent(healthBarLength);
@@ -613,6 +520,129 @@ bool Platformer::init()
 	tutorial->setOpacity(160);
 	tutorial->setScale(0.8f);
 	addChild(tutorial);
+}
+
+void Platformer::initCharacter()
+{
+	// Character
+	character = Sprite::create("Cookies/Run_0001.png");
+
+
+	// Animations
+	auto runAnim = Animation::create();
+	runAnim->setDelayPerUnit(0.05f);
+	runAnim->addSpriteFrameWithFile("Cookies/Run_0001.png");
+	runAnim->addSpriteFrameWithFile("Cookies/Run_0002.png");
+	runAnim->addSpriteFrameWithFile("Cookies/Run_0003.png");
+	runAnim->addSpriteFrameWithFile("Cookies/Run_0004.png");
+	runAnimation = Animate::create(runAnim);
+	runAnimation->retain();
+
+
+	auto jump1Anim = Animation::create();
+	jump1Anim->setDelayPerUnit(1);
+	jump1Anim->addSpriteFrameWithFile("Cookies/Jump1.png");
+	jump1Animation = Animate::create(jump1Anim);
+	jump1Animation->retain();
+
+
+	auto jump2Anim = Animation::create();
+	jump2Anim->setDelayPerUnit(0.07f);
+	jump2Anim->addSpriteFrameWithFile("Cookies/Jump2_0001.png");
+	jump2Anim->addSpriteFrameWithFile("Cookies/Jump2_0002.png");
+	jump2Anim->addSpriteFrameWithFile("Cookies/Jump2_0003.png");
+	jump2Anim->addSpriteFrameWithFile("Cookies/Jump2_0004.png");
+	jump2Animation = Animate::create(jump2Anim);
+	jump2Animation->retain();
+
+
+	auto slideAnim = Animation::create();
+	slideAnim->setDelayPerUnit(1);
+	slideAnim->addSpriteFrameWithFile("Cookies/Slide.png");
+	slideAnimation = Animate::create(slideAnim);
+	slideAnimation->retain();
+
+
+	character->runAction(RepeatForever::create(runAnimation));
+	character->setAnchorPoint(Vec2(0.5, 0));
+	character->setPosition(Vec2(startX, startY));
+
+
+	// Set Velocity and Physics
+	velocity = Vec2(VELOCITY, 0);
+	character->setTag(CHARACTER_TAG);
+
+	normalBody = PhysicsBody::createBox(Size(characterWidth, characterHeight), PHYSICSBODY_MATERIAL_DEFAULT, Vec2(0, -5));
+	normalBody->setGravityEnable(false);
+	normalBody->setContactTestBitmask(0xFFFFFFFF);
+
+	character->setPhysicsBody(normalBody);
+
+
+	addChild(character, 2);
+}
+
+
+
+// on "init" you need to initialize your instance
+bool Platformer::init()
+{
+    if ( !Scene::init() )
+    {
+        return false;
+    }
+
+	isFinished = false;
+	isGameOver = false;
+	isPaused = false;
+	// Audio Settings
+	/*
+	audio = SimpleAudioEngine::getInstance();
+	audio->preloadEffect("Sound/coin2.wav");
+	audio->preloadEffect("Sound/jelly.wav");
+	*/
+
+
+	// Set Game and Character Components
+	score = 0;
+	coin = 0;
+	health = STARTHEALTH;
+	
+	// Effect
+	blink = 0;
+	boost = 0;
+
+	// Move Components
+	isGround = false;
+	isMovingLeft = false;
+	isMovingRight = false;
+	canJump1 = false;
+	canJump2 = false;
+	isSliding = false;
+
+
+
+	// Init Map and background
+	initMap();
+	// Init Character
+	initCharacter();
+	// Init UI
+	initUI();
+
+
+	// Keyboard Listener
+	auto keyListener = EventListenerKeyboard::create();
+	keyListener->onKeyPressed = CC_CALLBACK_2(Platformer::onKeyPressed, this);
+	keyListener->onKeyReleased = CC_CALLBACK_2(Platformer::onKeyReleased, this);
+
+	_eventDispatcher->addEventListenerWithSceneGraphPriority(keyListener, this);
+
+	
+	// Contact (Physics) Listener
+	auto contactListener = EventListenerPhysicsContact::create();
+	contactListener->onContactBegin = CC_CALLBACK_1(Platformer::onContactBegin, this);
+	
+	_eventDispatcher->addEventListenerWithSceneGraphPriority(contactListener, this);
 
 
 	// DO NOT TOUCH HERE
@@ -624,15 +654,15 @@ bool Platformer::init()
 
 
 
-/* =============
-	U P D A T E
-   ============= */ 
-
+// UPDATE
 
 void Platformer::update(float delta)
 {
 	if (isGameOver) return;
 	// Status
+	// Scale
+	character->setScale(currentScale);
+
 	// Invincible for 2.5 seconds after hit
 	// and blink
 	if (isInvincible)
@@ -644,8 +674,8 @@ void Platformer::update(float delta)
 			blink = 0;
 		}
 	}
-
-
+	
+	// Boost effect
 	if (isBoost)
 	{
 		boost += delta;
@@ -657,10 +687,9 @@ void Platformer::update(float delta)
 	}
 
 	
-	// Crouch while pressing down arrow
 
-	character->setScale(currentScale);
 
+	// Slide
 	if (isGround)
 	{
 		if (isSliding == true && statusTag != STATUS_TAG::SLIDE)
@@ -706,8 +735,6 @@ void Platformer::update(float delta)
 		if (currentScale < 1) currentScale = 1;
 	}
 
-	
-	// Boost
 
 	// Position
 	auto position = character->getPosition();
@@ -722,9 +749,11 @@ void Platformer::update(float delta)
 	}
 
 
-	// Tile collision 
+	// Tile collision
+	// Call getHeight()
 	if(!isGameOver) groundHeight = Platformer::getHeight(position);
 	
+
 	// Ground Detection
 	// Landing
 	if (position.y <= groundHeight && velocity.y <= 0 && isGround == false)
@@ -746,7 +775,6 @@ void Platformer::update(float delta)
 	else if (position.y > groundHeight)
 	{
 		isGround = false;
-		canJump1 = false;
 
 		if (statusTag != STATUS_TAG::JUMP1 && statusTag != STATUS_TAG::JUMP2)
 		{
@@ -778,9 +806,11 @@ void Platformer::update(float delta)
 	if (character->getPositionY() < groundHeight && velocity.y <= 0) character->setPositionY(groundHeight);
 
 	// UI Control
+	// Label
 	scoreLabel->setString(std::to_string(score));
 	coinLabel->setString(std::to_string(coin));
 	
+	// Healthbar effect
 	float len = healthBar->getPercent();
 	if (len > healthBarLength) {
 		healthBar->setPercent(len -= delta * 2 * DECREASE_AMOUNT);
@@ -792,8 +822,15 @@ void Platformer::update(float delta)
 		healthBarBorder->setPosition(healthBarOrigin + Vec2(healthBarLength * healthBarWidth * 0.01, 0));
 	}
 
+
+
+
 	if (isFinished) return;
 
+
+	// Don't execute the scripts below when the game has finished
+
+	// Health
 	if (health > 0) health -= delta * DECREASE_AMOUNT;
 	else {
 		health = 0;
@@ -810,20 +847,17 @@ void Platformer::update(float delta)
 	bgFront->setPosition(cam->getPosition() + bgOffset);
 	bgRear->setPosition(bgFront->getPosition() + Vec2(bgSize.width, 0));
 
-
-	// Set Progress
-
-	progressIndicator->setPosition(progressOrigin + Vec2((position.x - startX) / (endX - startX) * barWidth, 0));
-
-	// Set Waker
-
-	waker->setPositionX(position.x + 400);
-
-
 	if ((bgOffset.x * -1) >= bgSize.width)
 	{
 		bgOffset.x += bgSize.width;
 	}
+
+
+	// Set Progress
+	progressIndicator->setPosition(progressOrigin + Vec2((position.x - startX) / (endX - startX) * barWidth, 0));
+
+	// Set Waker
+	waker->setPositionX(position.x + 400);
 }
 
 
@@ -914,7 +948,7 @@ bool Platformer::onContactBegin(PhysicsContact &contact)
 	// Neither character nor waker
 	if (character->getTag() != CHARACTER_TAG && character->getTag() != WAKER_TAG) return false;
 
-	// waker and wakeable
+	// Waker and wakeable
 	if (character->getTag() == WAKER_TAG)
 	{
 		if (object->getTag() == ITEM_TAG::SNAKE)
@@ -1063,6 +1097,7 @@ void Platformer::setHealthBarImmediate(float health)
 }
 
 
+// Shake Screen when the enhanced character jumps
 void Platformer::shakeScreen()
 {
 	auto m1 = MoveBy::create(0.05f, Vec2(0, 10));
@@ -1078,6 +1113,7 @@ void Platformer::shakeScreen()
 
 void Platformer::finish()
 {
+	// Flag Animation
 	auto riseAnimation = Animation::create();
 	riseAnimation->setDelayPerUnit(0.1f);
 	riseAnimation->addSpriteFrameWithFile("Checkpoint/FlagRise1.png");
@@ -1091,9 +1127,12 @@ void Platformer::finish()
 	checkpoint->stopAllActions();
 	checkpoint->runAction(flagAnimSeq);
 
+	// Result
 	scheduleOnce(schedule_selector(Platformer::printResult), 2);
  }
 
+
+// Flag Animation 2
 void Platformer::flagAnimate()
 {
 	auto flagAnimation = Animation::create();
@@ -1105,11 +1144,15 @@ void Platformer::flagAnimate()
 	checkpoint->runAction(RepeatForever::create(flagAnim));
 }
 
+
+// Game Over!
 void Platformer::gameOver()
 {
 	isGameOver = true;
 	
 	velocity = Vec2::ZERO;
+
+	// Character dead animation
 	auto deadAnimation = Animation::create();
 	deadAnimation->setDelayPerUnit(0.1f);
 	deadAnimation->addSpriteFrameWithFile("Cookies/Die1.png");
@@ -1121,14 +1164,15 @@ void Platformer::gameOver()
 	character->stopAllActions();
 	character->runAction(Repeat::create(deadAnim, 1));
 
+
+	// Result
 	scheduleOnce(schedule_selector(Platformer::printResult), 1);
 }
 
 
 void Platformer::printResult(float dt)
 {
-	log("Print result...");
-	// velocity = Vec2::ZERO;
+	// log("Print result...");
 
 	// Result Panel
 	Node* res = Node::create();
@@ -1142,6 +1186,7 @@ void Platformer::printResult(float dt)
 
 	resultSprite->setScale(0.8f);
 
+	// Score
 	auto scoreRes = Label::createWithTTF("0", "fonts/Station.ttf", 50);
 	scoreRes->setTextColor(Color4B::WHITE);
 	scoreRes->enableOutline(Color4B::BLACK, 5);
@@ -1152,6 +1197,7 @@ void Platformer::printResult(float dt)
 	scoreRes->setString(std::to_string(score));
 	res->addChild(scoreRes, 3);
 
+	// Coin
 	auto coinRes = Label::createWithTTF("0", "fonts/Station.ttf", 50);
 	coinRes->setTextColor(Color4B::WHITE);
 	coinRes->enableOutline(Color4B::BLACK, 5);
@@ -1175,10 +1221,9 @@ void Platformer::printResult(float dt)
 	replayButton->setCameraMask((unsigned short)CameraFlag::USER1);
 	replayButton->setPosition(scoreRes->getPosition() + Vec2(0, -120));
 
-
-	// Parent Node
 	res->addChild(replayButton, 3);
 
+	// Parent Node
 	addChild(res);
 	res->setCascadeOpacityEnabled(true);
 	res->setOpacity(0);
@@ -1187,24 +1232,27 @@ void Platformer::printResult(float dt)
 	return;
 }
 
-
+// Replay Scene
 void Platformer::replay(Ref* pSender)
 {
 	_director->getInstance()->replaceScene(Platformer::createScene());
 }
 
+// Exit Scene
 void Platformer::exit(Ref* pSender)
 {
 	_director->getInstance()->end();
 }
 
-
+// Show Boost Effect
 void Platformer::showBoostEffect()
 {
 	auto effect = Sprite::create("BoostEffect.png");
 	effect->setPosition(character->getPosition() + Vec2(-20, 50));
 	effect->setScale(1.5f);
 	addChild(effect);
+
+	// Includes FadeOut
 	auto seq = Sequence::create(FadeOut::create(1), RemoveSelf::create(), nullptr);
 	effect->runAction(seq);
 }
