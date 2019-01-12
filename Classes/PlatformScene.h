@@ -28,8 +28,10 @@
 #include "cocos2d.h"
 #include "ui/CocosGUI.h"
 #include "CoinPos.h"
-#include "audio/include/SimpleAudioEngine.h"
+#include "SimpleAudioEngine.h"
+
 using namespace CocosDenshion;
+
 USING_NS_CC;
 
 #define CHARACTER_TAG 10
@@ -99,6 +101,9 @@ private:
 	void resetInvincible(float dt);
 	void resetEnhanced(float dt);
 	void resetBoost(float dt);
+
+	void slide();
+	void run();
 
 	// UI
 	void setHealthBar(float dt);

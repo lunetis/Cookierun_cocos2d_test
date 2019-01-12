@@ -602,7 +602,6 @@ bool Platformer::init()
 	audio->preloadEffect("Sound/jelly.wav");
 	*/
 
-
 	// Set Game and Character Components
 	score = 0;
 	coin = 0;
@@ -694,31 +693,11 @@ void Platformer::update(float delta)
 	{
 		if (isSliding == true && statusTag != STATUS_TAG::SLIDE)
 		{
-			character->stopAllActions();
-			character->runAction(RepeatForever::create(slideAnimation));
-
-			slideBody = PhysicsBody::createBox(Size(characterWidth, characterHeight * 0.6), PHYSICSBODY_MATERIAL_DEFAULT, Vec2(0, -27));
-			slideBody->setGravityEnable(false);
-			slideBody->setContactTestBitmask(0xFFFFFFFF);
-
-			character->removeComponent(character->getPhysicsBody());
-			character->addComponent(slideBody);
-
-			statusTag = STATUS_TAG::SLIDE;
+			slide();
 		}
 		else if(isSliding == false && statusTag != STATUS_TAG::RUN)
 		{
-			character->stopAllActions();
-			character->runAction(RepeatForever::create(runAnimation));
-
-			normalBody = PhysicsBody::createBox(Size(characterWidth, characterHeight), PHYSICSBODY_MATERIAL_DEFAULT, Vec2(0, -5));
-			normalBody->setGravityEnable(false);
-			normalBody->setContactTestBitmask(0xFFFFFFFF);
-
-			character->removeComponent(character->getPhysicsBody());
-			character->addComponent(normalBody);
-
-			statusTag = STATUS_TAG::RUN;
+			run();
 		}
 	}
 
@@ -966,26 +945,26 @@ bool Platformer::onContactBegin(PhysicsContact &contact)
 		score += 499;
 		coin += 1;
 		object->removeFromParentAndCleanup(true);
-		//audio->playEffect("Sound/coin2.wav", false);
+		//audio->playEffect("Sound/coin2.wav");
 		break;
 
 	case ITEM_TAG::GOLDCOIN:
 		score += 833;
 		coin += 10;
 		object->removeFromParentAndCleanup(true);
-		//audio->playEffect("Sound/coin2.wav", false);
+		//audio->playEffect("Sound/coin2.wav");
 		break;
 
 	case ITEM_TAG::JELLY:
 		score += 1499;
 		object->removeFromParentAndCleanup(true);
-		//audio->playEffect("Sound/jelly.wav", false);
+		//audio->playEffect("Sound/jelly.wav");
 		break;
 
 	case ITEM_TAG::BEARJELLY:
 		score += 3333;
 		object->removeFromParentAndCleanup(true);
-		//audio->playEffect("Sound/jelly.wav", false);
+		//audio->playEffect("Sound/jelly.wav");
 		break;
 
 	case ITEM_TAG::TRAP:
@@ -1077,6 +1056,40 @@ void Platformer::resetBoost(float dt)
 	// Invincible time
 	isInvincible = true;
 	scheduleOnce(schedule_selector(Platformer::resetInvincible), 2.5f);
+}
+
+
+
+// Run/Slide
+// Reset character's actions and physicsbody
+void Platformer::slide()
+{
+	character->stopAllActions();
+	character->runAction(RepeatForever::create(slideAnimation));
+
+	slideBody = PhysicsBody::createBox(Size(characterWidth, characterHeight * 0.6), PHYSICSBODY_MATERIAL_DEFAULT, Vec2(0, -27));
+	slideBody->setGravityEnable(false);
+	slideBody->setContactTestBitmask(0xFFFFFFFF);
+
+	character->removeComponent(character->getPhysicsBody());
+	character->addComponent(slideBody);
+
+	statusTag = STATUS_TAG::SLIDE;
+}
+
+void Platformer::run()
+{
+	character->stopAllActions();
+	character->runAction(RepeatForever::create(runAnimation));
+
+	normalBody = PhysicsBody::createBox(Size(characterWidth, characterHeight), PHYSICSBODY_MATERIAL_DEFAULT, Vec2(0, -5));
+	normalBody->setGravityEnable(false);
+	normalBody->setContactTestBitmask(0xFFFFFFFF);
+
+	character->removeComponent(character->getPhysicsBody());
+	character->addComponent(normalBody);
+
+	statusTag = STATUS_TAG::RUN;
 }
 
 
