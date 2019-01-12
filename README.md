@@ -8,6 +8,6 @@
 + 모든 그래픽 리소스는 원본의 리소스를 따라하되 추출 없이 스스로 제작했음을 밝힙니다.
 + 로직/파일 분산 및 최적화 필요
 + 텍스처 아틀라스로 재구성 필요
-
++ 현재 오디오 출력 비활성화
 - Resources/Sound 내의 wav 파일 출처: Gamemaster Audio - Pro Sound Collection Pack 
 https://www.gamemasteraudio.com/
