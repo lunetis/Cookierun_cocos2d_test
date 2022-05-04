@@ -1,5 +1,4 @@
-# Cookierun_Prototype
-
+# Cookierun_cocos2d_test
 * Cocos2d-x 개발 연습용 프로젝트
 * Development: Cocos2d-x 3.17.1 (2018.12.24 Updated), Windows 10 64bit, Visual Studio 2017)
 * 실행 영상: https://youtu.be/0mR2nbrEorQ
